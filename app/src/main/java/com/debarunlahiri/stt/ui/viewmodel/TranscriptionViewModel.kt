@@ -25,25 +25,11 @@ class TranscriptionViewModel @Inject constructor(
     private val _transcriptionState = MutableStateFlow<UiState<TranscriptionResponse>>(UiState.Idle)
     val transcriptionState: StateFlow<UiState<TranscriptionResponse>> = _transcriptionState.asStateFlow()
     
-    private val _selectedLanguage = MutableStateFlow(Constants.LANG_AUTO)
-    val selectedLanguage: StateFlow<String> = _selectedLanguage.asStateFlow()
-    
-    private val _enableWordTimestamps = MutableStateFlow(true)
-    val enableWordTimestamps: StateFlow<Boolean> = _enableWordTimestamps.asStateFlow()
-    
     private val _recordingDuration = MutableStateFlow(0L)
     val recordingDuration: StateFlow<Long> = _recordingDuration.asStateFlow()
     
     private val _audioAmplitude = MutableStateFlow(0)
     val audioAmplitude: StateFlow<Int> = _audioAmplitude.asStateFlow()
-    
-    fun setLanguage(language: String) {
-        _selectedLanguage.value = language
-    }
-    
-    fun toggleWordTimestamps() {
-        _enableWordTimestamps.value = !_enableWordTimestamps.value
-    }
     
     fun updateRecordingDuration(duration: Long) {
         _recordingDuration.value = duration
@@ -101,13 +87,19 @@ class TranscriptionViewModel @Inject constructor(
         _translationState.value = UiState.Idle
     }
     
+    private var transcriptionJob: kotlinx.coroutines.Job? = null
+
     fun transcribeAudioFile(audioFile: File) {
-        viewModelScope.launch {
+        // Cancel previous job if active
+        transcriptionJob?.cancel()
+        
+        transcriptionJob = viewModelScope.launch {
             _transcriptionState.value = UiState.Loading
             
             try {
                 // Check file size
                 val fileSizeMB = FileUtils.getFileSizeInMB(audioFile)
+                
                 if (fileSizeMB > Constants.MAX_FILE_SIZE_MB) {
                     _transcriptionState.value = UiState.Error(
                         "File size (${"%.2f".format(fileSizeMB)} MB) exceeds maximum allowed size of ${Constants.MAX_FILE_SIZE_MB} MB"
@@ -120,8 +112,8 @@ class TranscriptionViewModel @Inject constructor(
                 
                 when (val result = repository.transcribeAudio(
                     audioPart = audioPart,
-                    language = _selectedLanguage.value,
-                    enableWordTimestamps = _enableWordTimestamps.value
+                    language = Constants.LANG_AUTO,
+                    enableWordTimestamps = true
                 )) {
                     is Result.Success -> {
                         _transcriptionState.value = UiState.Success(result.data)
@@ -138,6 +130,9 @@ class TranscriptionViewModel @Inject constructor(
                 audioFile.delete()
                 
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) {
+                    throw e
+                }
                 _transcriptionState.value = UiState.Error(
                     "Error: ${e.message ?: "Unknown error"}",
                     e

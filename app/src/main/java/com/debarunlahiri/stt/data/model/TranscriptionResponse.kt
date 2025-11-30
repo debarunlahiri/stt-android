@@ -13,6 +13,12 @@ data class TranscriptionResponse(
     val detectedLanguage: String,
     @Json(name = "segments")
     val segments: List<Segment>,
+    @Json(name = "english_text")
+    val englishText: String,
+    @Json(name = "hindi_text")
+    val hindiText: String,
+    @Json(name = "korean_text")
+    val koreanText: String,
     @Json(name = "processing_time_sec")
     val processingTimeSec: Double,
     @Json(name = "real_time_factor")

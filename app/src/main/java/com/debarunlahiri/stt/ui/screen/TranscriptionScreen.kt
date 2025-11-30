@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +30,7 @@ import androidx.navigation.NavController
 import com.debarunlahiri.stt.ui.components.AudioPlayer
 import com.debarunlahiri.stt.ui.components.AudioWaveform
 import com.debarunlahiri.stt.ui.components.ErrorDisplay
-import com.debarunlahiri.stt.ui.components.LanguageDropdown
+
 import com.debarunlahiri.stt.ui.components.LoadingIndicator
 import com.debarunlahiri.stt.ui.components.ResultCard
 import com.debarunlahiri.stt.ui.viewmodel.TranscriptionViewModel
@@ -47,8 +48,7 @@ fun TranscriptionScreen(
 ) {
     val context = LocalContext.current
     val transcriptionState by viewModel.transcriptionState.collectAsState()
-    val selectedLanguage by viewModel.selectedLanguage.collectAsState()
-    val enableWordTimestamps by viewModel.enableWordTimestamps.collectAsState()
+
     val recordingDuration by viewModel.recordingDuration.collectAsState()
     val audioAmplitude by viewModel.audioAmplitude.collectAsState()
     val messengerState by viewModel.messengerState.collectAsState()
@@ -68,6 +68,38 @@ fun TranscriptionScreen(
     
     LaunchedEffect(Unit) {
         permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+    }
+    
+    // Auto-transcribe when recording stops
+    LaunchedEffect(recordedFile) {
+        recordedFile?.let { file ->
+            viewModel.transcribeAudioFile(file)
+        }
+    }
+    
+    // Auto-navigate to messenger after successful transcription
+    LaunchedEffect(transcriptionState) {
+        if (transcriptionState is UiState.Success) {
+            val data = (transcriptionState as UiState.Success).data
+            val transcribedText = data.text
+            val englishText = data.englishText
+            val hindiText = data.hindiText
+            val koreanText = data.koreanText
+            val audioUrl = data.audioFileUrl
+            
+            val encodedMessage = java.net.URLEncoder.encode(transcribedText, "UTF-8")
+            val encodedEnglish = java.net.URLEncoder.encode(englishText, "UTF-8")
+            val encodedHindi = java.net.URLEncoder.encode(hindiText, "UTF-8")
+            val encodedKorean = java.net.URLEncoder.encode(koreanText, "UTF-8")
+            val encodedAudioUrl = audioUrl?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: "null"
+            
+            navController.navigate(
+                "${com.debarunlahiri.stt.ui.navigation.Screen.Messenger.route}?message=$encodedMessage&englishText=$encodedEnglish&hindiText=$encodedHindi&koreanText=$encodedKorean&audioUrl=$encodedAudioUrl"
+            )
+            
+            // Reset state to prevent loop when navigating back
+            viewModel.resetState()
+        }
     }
     
     // Timer and amplitude monitor for recording with 30-second limit
@@ -102,7 +134,8 @@ fun TranscriptionScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -206,95 +239,8 @@ fun TranscriptionScreen(
                 }
             }
             
-            // Settings Card - NOW BELOW RECORDING
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    
-                    LanguageDropdown(
-                        selectedLanguage = selectedLanguage,
-                        languages = Constants.SUPPORTED_LANGUAGES,
-                        onLanguageSelected = { viewModel.setLanguage(it) },
-                        label = "Language"
-                    )
-                    
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Enable Word Timestamps")
-                        Switch(
-                            checked = enableWordTimestamps,
-                            onCheckedChange = { viewModel.toggleWordTimestamps() }
-                        )
-                    }
-                    
-                    Text(
-                        text = "Note: Max recording ${Constants.MAX_RECORDING_DURATION_SEC}s, Max API duration ${Constants.MAX_AUDIO_DURATION_SEC}s",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+
             
-            // Action Buttons (only shows when audio is recorded)
-            if (recordedFile != null && !isRecording) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            recordedFile?.let { file ->
-                                viewModel.transcribeAudioFile(file)
-                            }
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp), // Fixed height for consistency
-                        enabled = transcriptionState !is UiState.Loading && messengerState !is UiState.Loading
-                    ) {
-                        Text(
-                            text = "Transcribe",
-                            maxLines = 1
-                        )
-                    }
-                    
-                    Button(
-                        onClick = {
-                            // Navigate to messenger screen with data
-                            val transcribedText = (transcriptionState as? UiState.Success)?.data?.text ?: ""
-                            val translatedText = (translationState as? UiState.Success)?.data?.translatedText
-                            val audioUrl = (transcriptionState as? UiState.Success)?.data?.audioFileUrl
-                            
-                            val encodedMessage = java.net.URLEncoder.encode(transcribedText, "UTF-8")
-                            val encodedTranslation = translatedText?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: "null"
-                            val encodedAudioUrl = audioUrl?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: "null"
-                            
-                            navController.navigate(
-                                "${com.debarunlahiri.stt.ui.navigation.Screen.Messenger.route}?message=$encodedMessage&translation=$encodedTranslation&audioUrl=$encodedAudioUrl"
-                            )
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp), // Fixed height for consistency
-                        enabled = transcriptionState is UiState.Success
-                    ) {
-                        Text(
-                            text = "Messenger",
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
             
             // Transcription Results
             when (val state = transcriptionState) {
@@ -461,23 +407,67 @@ fun TranscriptionScreen(
                     }
                 }
                 is UiState.Success -> {
-                    ResultCard(title = "Translation Result") {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = state.data.translatedText,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                    ResultCard(title = "Translation Results") {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // Show all three language translations
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "English",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(text = state.data.englishText)
+                                }
+                            }
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Hindi",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(text = state.data.hindiText)
+                                }
+                            }
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Korean",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(text = state.data.koreanText)
+                                }
+                            }
                             
                             Divider()
                             
                             Text(
-                                text = "${state.data.sourceLanguage.uppercase()} → ${state.data.targetLanguage.uppercase()}",
+                                text = "Source: ${state.data.sourceLanguage.uppercase()}",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             
                             TextButton(onClick = { viewModel.resetTranslationState() }) {
-                                Text("Translate to Another Language")
+                                Text("Hide Translations")
                             }
                         }
                     }
@@ -512,42 +502,22 @@ fun PushToTalkButton(
         label = "scale"
     )
     
-    var isPressed by remember { mutableStateOf(false) }
-    
-    // Handle recording based on press state
-    LaunchedEffect(isPressed) {
-        if (isPressed && !isRecording) {
-            onStartRecording()
-        } else if (!isPressed && isRecording) {
-            onStopRecording()
-        }
-    }
-    
+    // Click to toggle recording instead of hold
     Box(
         modifier = Modifier
-            .size(180.dp) // Larger touch area
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        event.changes.forEach { change ->
-                            when {
-                                change.pressed -> {
-                                    isPressed = true
-                                    change.consume()
-                                }
-                                else -> {
-                                    isPressed = false
-                                    change.consume()
-                                }
-                            }
-                        }
+            .size(180.dp)
+            .clickable(
+                onClick = {
+                    if (isRecording) {
+                        onStopRecording()
+                    } else {
+                        onStartRecording()
                     }
                 }
-            },
+            ),
         contentAlignment = Alignment.Center
     ) {
-        // Visual button (smaller than touch area)
+        // Visual button
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -560,7 +530,7 @@ fun PushToTalkButton(
         ) {
             Icon(
                 imageVector = Icons.Default.Mic,
-                contentDescription = "Push to Talk",
+                contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
                 tint = Color.White,
                 modifier = Modifier.size(48.dp)
             )

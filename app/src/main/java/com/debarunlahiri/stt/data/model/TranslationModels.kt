@@ -15,12 +15,14 @@ data class TranslationRequest(
 
 @JsonClass(generateAdapter = true)
 data class TranslationResponse(
-    @Json(name = "translated_text")
-    val translatedText: String,
+    @Json(name = "english_text")
+    val englishText: String,
+    @Json(name = "hindi_text")
+    val hindiText: String,
+    @Json(name = "korean_text")
+    val koreanText: String,
     @Json(name = "source_language")
     val sourceLanguage: String,
-    @Json(name = "target_language")
-    val targetLanguage: String,
     @Json(name = "detected_language")
     val detectedLanguage: String,
     @Json(name = "detection_confidence")

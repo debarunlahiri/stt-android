@@ -22,7 +22,9 @@ fun MessengerScreen(
     navController: NavController,
     viewModel: TranscriptionViewModel,
     transcribedText: String,
-    translatedText: String?,
+    englishText: String?,
+    hindiText: String?,
+    koreanText: String?,
     audioFileUrl: String?
 ) {
     val messengerState by viewModel.messengerState.collectAsState()
@@ -31,7 +33,9 @@ fun MessengerScreen(
     var senderName by remember { mutableStateOf("John Doe") }
     var senderId by remember { mutableStateOf("user_12345") }
     var message by remember { mutableStateOf(transcribedText) }
-    var translatedMessage by remember { mutableStateOf(translatedText ?: "") }
+    var englishMessage by remember { mutableStateOf(englishText ?: "") }
+    var hindiMessage by remember { mutableStateOf(hindiText ?: "") }
+    var koreanMessage by remember { mutableStateOf(koreanText ?: "") }
     var audioLink by remember { mutableStateOf(audioFileUrl ?: "") }
 
     Scaffold(
@@ -44,7 +48,8 @@ fun MessengerScreen(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -86,29 +91,49 @@ fun MessengerScreen(
                         readOnly = true
                     )
                     
-                    // Message
+                    // Original Message
                     OutlinedTextField(
                         value = message,
                         onValueChange = { },
-                        label = { Text("Message (Transcribed)") },
+                        label = { Text("Original Message (Transcribed)") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         maxLines = 5,
                         readOnly = true
                     )
                     
-                    // Translated Message (optional)
-                    if (translatedText != null) {
-                        OutlinedTextField(
-                            value = translatedMessage,
-                            onValueChange = { },
-                            label = { Text("Translated Message") },
-                            modifier = Modifier.fillMaxWidth(),
-                            minLines = 3,
-                            maxLines = 5,
-                            readOnly = true
-                        )
-                    }
+                    // English Translation
+                    OutlinedTextField(
+                        value = englishMessage,
+                        onValueChange = { },
+                        label = { Text("English Translation") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 5,
+                        readOnly = true
+                    )
+                    
+                    // Hindi Translation
+                    OutlinedTextField(
+                        value = hindiMessage,
+                        onValueChange = { },
+                        label = { Text("Hindi Translation") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 5,
+                        readOnly = true
+                    )
+                    
+                    // Korean Translation
+                    OutlinedTextField(
+                        value = koreanMessage,
+                        onValueChange = { },
+                        label = { Text("Korean Translation") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 5,
+                        readOnly = true
+                    )
                     
                     // Audio Link
                     if (audioFileUrl != null) {
@@ -133,9 +158,15 @@ fun MessengerScreen(
                             append(" ($senderId)")
                         }
                         append("\n\n")
-                        append("Message: $message")
-                        if (translatedMessage.isNotEmpty()) {
-                            append("\n\nTranslated Message: $translatedMessage")
+                        append("Original Message: $message")
+                        if (englishMessage.isNotEmpty()) {
+                            append("\n\nEnglish: $englishMessage")
+                        }
+                        if (hindiMessage.isNotEmpty()) {
+                            append("\n\nHindi: $hindiMessage")
+                        }
+                        if (koreanMessage.isNotEmpty()) {
+                            append("\n\nKorean: $koreanMessage")
                         }
                         if (audioLink.isNotEmpty()) {
                             append("\n\nAudio Link: $audioLink")

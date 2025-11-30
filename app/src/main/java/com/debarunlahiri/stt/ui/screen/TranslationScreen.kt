@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.debarunlahiri.stt.ui.components.ErrorDisplay
@@ -140,20 +141,79 @@ fun TranslationScreen(
                     LoadingIndicator("Translating...")
                 }
                 is UiState.Success -> {
-                    ResultCard(title = "Translation Result") {
-                        Text(
-                            text = state.data.translatedText,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                    ResultCard(title = "Translation Results (All Languages)") {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // English Translation
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "English",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = state.data.englishText,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                            
+                            // Hindi Translation
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Hindi",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = state.data.hindiText,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                            
+                            // Korean Translation
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Korean",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = state.data.koreanText,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
                         
                         Divider()
                         
                         Text("Detected Language: ${state.data.detectedLanguage.uppercase()}")
                         Text("Source Language: ${state.data.sourceLanguage.uppercase()}")
-                        Text("Target Language: ${state.data.targetLanguage.uppercase()}")
                         Text("Detection Confidence: ${"%.2f%%".format(state.data.detectionConfidence * 100)}")
                         Text("Processing Time: ${"%.3f".format(state.data.processingTimeSec)}s")
                         Text("Translation Applied: ${if (state.data.translationApplied) "Yes" else "No (same language)"}")
+                        }
                     }
                 }
                 is UiState.Error -> {

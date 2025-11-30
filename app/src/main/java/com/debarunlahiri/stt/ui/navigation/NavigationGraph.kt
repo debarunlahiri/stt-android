@@ -43,10 +43,20 @@ fun NavigationGraph(navController: NavHostController) {
         }
         
         composable(
-            route = "${Screen.Messenger.route}?message={message}&translation={translation}&audioUrl={audioUrl}",
+            route = "${Screen.Messenger.route}?message={message}&englishText={englishText}&hindiText={hindiText}&koreanText={koreanText}&audioUrl={audioUrl}",
             arguments = listOf(
                 navArgument("message") { type = NavType.StringType },
-                navArgument("translation") { 
+                navArgument("englishText") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("hindiText") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("koreanText") { 
                     type = NavType.StringType
                     nullable = true
                     defaultValue = null
@@ -62,7 +72,13 @@ fun NavigationGraph(navController: NavHostController) {
             val message = backStackEntry.arguments?.getString("message")?.let {
                 URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
             } ?: ""
-            val translation = backStackEntry.arguments?.getString("translation")?.let {
+            val englishText = backStackEntry.arguments?.getString("englishText")?.let {
+                if (it != "null") URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) else null
+            }
+            val hindiText = backStackEntry.arguments?.getString("hindiText")?.let {
+                if (it != "null") URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) else null
+            }
+            val koreanText = backStackEntry.arguments?.getString("koreanText")?.let {
                 if (it != "null") URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) else null
             }
             val audioUrl = backStackEntry.arguments?.getString("audioUrl")?.let {
@@ -72,7 +88,9 @@ fun NavigationGraph(navController: NavHostController) {
                 navController = navController,
                 viewModel = viewModel,
                 transcribedText = message,
-                translatedText = translation,
+                englishText = englishText,
+                hindiText = hindiText,
+                koreanText = koreanText,
                 audioFileUrl = audioUrl
             )
         }
