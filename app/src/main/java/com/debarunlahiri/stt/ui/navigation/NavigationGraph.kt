@@ -29,7 +29,12 @@ fun NavigationGraph(navController: NavHostController) {
         
         composable(Screen.Transcription.route) {
             val viewModel: TranscriptionViewModel = hiltViewModel()
-            TranscriptionScreen(navController, viewModel)
+            val context = androidx.compose.ui.platform.LocalContext.current
+            if (com.debarunlahiri.stt.util.DeviceUtils.isWearOs(context)) {
+                com.debarunlahiri.stt.ui.screen.wear.WearTranscriptionScreen(navController, viewModel)
+            } else {
+                TranscriptionScreen(navController, viewModel)
+            }
         }
         
         composable(Screen.Translation.route) {
@@ -69,6 +74,7 @@ fun NavigationGraph(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val viewModel: TranscriptionViewModel = hiltViewModel()
+            val context = androidx.compose.ui.platform.LocalContext.current
             val message = backStackEntry.arguments?.getString("message")?.let {
                 URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
             } ?: ""
@@ -84,15 +90,27 @@ fun NavigationGraph(navController: NavHostController) {
             val audioUrl = backStackEntry.arguments?.getString("audioUrl")?.let {
                 if (it != "null") URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) else null
             }
-            MessengerScreen(
-                navController = navController,
-                viewModel = viewModel,
-                transcribedText = message,
-                englishText = englishText,
-                hindiText = hindiText,
-                koreanText = koreanText,
-                audioFileUrl = audioUrl
-            )
+            if (com.debarunlahiri.stt.util.DeviceUtils.isWearOs(context)) {
+                com.debarunlahiri.stt.ui.screen.wear.WearMessengerScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    transcribedText = message,
+                    englishText = englishText,
+                    hindiText = hindiText,
+                    koreanText = koreanText,
+                    audioFileUrl = audioUrl
+                )
+            } else {
+                MessengerScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    transcribedText = message,
+                    englishText = englishText,
+                    hindiText = hindiText,
+                    koreanText = koreanText,
+                    audioFileUrl = audioUrl
+                )
+            }
         }
     }
 }
