@@ -23,8 +23,9 @@ fun NavigationGraph(navController: NavHostController) {
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) {
-            val viewModel: HealthCheckViewModel = hiltViewModel()
-            HomeScreen(navController, viewModel)
+            val healthViewModel: HealthCheckViewModel = hiltViewModel()
+            val transcriptionViewModel: TranscriptionViewModel = hiltViewModel()
+            HomeScreen(navController, healthViewModel, transcriptionViewModel)
         }
         
         composable(Screen.Transcription.route) {
