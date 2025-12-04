@@ -6,6 +6,7 @@ import com.debarunlahiri.stt.data.model.TranscriptionResponse
 import com.debarunlahiri.stt.data.model.TranslationResponse
 import com.debarunlahiri.stt.data.repository.Result
 import com.debarunlahiri.stt.data.repository.SttRepository
+import com.debarunlahiri.stt.util.AudioQuality
 import com.debarunlahiri.stt.util.Constants
 import com.debarunlahiri.stt.util.FileUtils
 import com.debarunlahiri.stt.util.UiState
@@ -31,12 +32,23 @@ class TranscriptionViewModel @Inject constructor(
     private val _audioAmplitude = MutableStateFlow(0)
     val audioAmplitude: StateFlow<Int> = _audioAmplitude.asStateFlow()
     
+    private val _audioQuality = MutableStateFlow<AudioQuality>(AudioQuality.GOOD)
+    val audioQuality: StateFlow<AudioQuality> = _audioQuality.asStateFlow()
+    
+    private val _audioRmsLevel = MutableStateFlow(0.0)
+    val audioRmsLevel: StateFlow<Double> = _audioRmsLevel.asStateFlow()
+    
     fun updateRecordingDuration(duration: Long) {
         _recordingDuration.value = duration
     }
     
     fun updateAmplitude(amplitude: Int) {
         _audioAmplitude.value = amplitude
+    }
+    
+    fun updateAudioQuality(quality: AudioQuality, rmsLevel: Double) {
+        _audioQuality.value = quality
+        _audioRmsLevel.value = rmsLevel
     }
     
     private val _messengerState = MutableStateFlow<UiState<String>>(UiState.Idle)
@@ -145,6 +157,8 @@ class TranscriptionViewModel @Inject constructor(
         _transcriptionState.value = UiState.Idle
         _recordingDuration.value = 0L
         _audioAmplitude.value = 0
+        _audioQuality.value = AudioQuality.GOOD
+        _audioRmsLevel.value = 0.0
         _translationState.value = UiState.Idle
         _messengerState.value = UiState.Idle
     }

@@ -34,6 +34,7 @@ import com.debarunlahiri.stt.ui.components.ErrorDisplay
 import com.debarunlahiri.stt.ui.components.LoadingIndicator
 import com.debarunlahiri.stt.ui.components.ResultCard
 import com.debarunlahiri.stt.ui.viewmodel.TranscriptionViewModel
+import com.debarunlahiri.stt.util.AudioQuality
 import com.debarunlahiri.stt.util.AudioRecorder
 import com.debarunlahiri.stt.util.Constants
 import com.debarunlahiri.stt.util.UiState
@@ -51,6 +52,8 @@ fun TranscriptionScreen(
 
     val recordingDuration by viewModel.recordingDuration.collectAsState()
     val audioAmplitude by viewModel.audioAmplitude.collectAsState()
+    val audioQuality by viewModel.audioQuality.collectAsState()
+    val audioRmsLevel by viewModel.audioRmsLevel.collectAsState()
     val messengerState by viewModel.messengerState.collectAsState()
     val translationState by viewModel.translationState.collectAsState()
     
@@ -58,7 +61,13 @@ fun TranscriptionScreen(
     var recordedFile by remember { mutableStateOf<File?>(null) }
     var hasPermission by remember { mutableStateOf(false) }
     
-    val audioRecorder = remember { AudioRecorder(context) }
+    val audioRecorder = remember { 
+        AudioRecorder(context).apply {
+            setAudioQualityCallback { quality, rmsLevel ->
+                viewModel.updateAudioQuality(quality, rmsLevel)
+            }
+        }
+    }
     
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -193,6 +202,25 @@ fun TranscriptionScreen(
                                     color = if (isNearLimit) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                        }
+                    }
+                    
+                    // Audio Quality Feedback
+                    if (isRecording && audioQuality != AudioQuality.GOOD) {
+                        val feedbackMessage = when (audioQuality) {
+                            AudioQuality.LOW_VOLUME -> "Please speak louder"
+                            AudioQuality.HIGH_NOISE -> "Too much background noise"
+                            AudioQuality.SILENT -> "No audio detected"
+                            AudioQuality.GOOD -> ""
+                        }
+                        
+                        if (feedbackMessage.isNotEmpty()) {
+                            Text(
+                                text = feedbackMessage,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
                         }
                     }
                     

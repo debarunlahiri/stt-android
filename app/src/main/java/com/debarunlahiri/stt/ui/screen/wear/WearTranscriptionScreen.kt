@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.wear.compose.material.*
 import com.debarunlahiri.stt.ui.viewmodel.TranscriptionViewModel
+import com.debarunlahiri.stt.util.AudioQuality
 import com.debarunlahiri.stt.util.AudioRecorder
 import com.debarunlahiri.stt.util.Constants
 import com.debarunlahiri.stt.util.UiState
@@ -38,12 +39,19 @@ fun WearTranscriptionScreen(
     val context = LocalContext.current
     val transcriptionState by viewModel.transcriptionState.collectAsState()
     val recordingDuration by viewModel.recordingDuration.collectAsState()
+    val audioQuality by viewModel.audioQuality.collectAsState()
     
     var isRecording by remember { mutableStateOf(false) }
     var recordedFile by remember { mutableStateOf<File?>(null) }
     var hasPermission by remember { mutableStateOf(false) }
     
-    val audioRecorder = remember { AudioRecorder(context) }
+    val audioRecorder = remember { 
+        AudioRecorder(context).apply {
+            setAudioQualityCallback { quality, rmsLevel ->
+                viewModel.updateAudioQuality(quality, rmsLevel)
+            }
+        }
+    }
     
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -196,6 +204,26 @@ fun WearTranscriptionScreen(
                                 color = MaterialTheme.colors.error,
                                 textAlign = TextAlign.Center
                             )
+                        }
+                        
+                        // Audio Quality Feedback
+                        if (isRecording && audioQuality != AudioQuality.GOOD) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val feedbackMessage = when (audioQuality) {
+                                AudioQuality.LOW_VOLUME -> "Speak louder"
+                                AudioQuality.HIGH_NOISE -> "Too noisy"
+                                AudioQuality.SILENT -> "No audio"
+                                AudioQuality.GOOD -> ""
+                            }
+                            
+                            if (feedbackMessage.isNotEmpty()) {
+                                Text(
+                                    text = feedbackMessage,
+                                    style = MaterialTheme.typography.body2,
+                                    color = MaterialTheme.colors.error,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))

@@ -2,7 +2,7 @@ package com.debarunlahiri.stt.util
 
 object Constants {
     // API Configuration
-    const val BASE_URL = "http://192.168.0.65:3000/" // Use 10.0.2.2 for emulator, or your actual server IP for physical device
+    const val BASE_URL = "http://192.168.0.65:8000/" // Use 10.0.2.2 for emulator, or your actual server IP for physical device
     
     // API Endpoints
     const val ENDPOINT_HEALTH = "health"
