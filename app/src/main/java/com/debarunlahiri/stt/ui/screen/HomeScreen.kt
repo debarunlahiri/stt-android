@@ -5,11 +5,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -23,6 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -104,7 +111,18 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("STT Service") },
+                title = { 
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("STT Service")
+                        ServiceStatusPill(
+                            healthState = healthState,
+                            context = context
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { healthViewModel.checkHealth() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
@@ -121,68 +139,6 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Health Status Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = when (healthState) {
-                        is UiState.Success -> MaterialTheme.colorScheme.primaryContainer
-                        is UiState.Error -> MaterialTheme.colorScheme.errorContainer
-                        else -> MaterialTheme.colorScheme.surfaceVariant
-                    }
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = when (healthState) {
-                                is UiState.Success -> Icons.Default.CheckCircle
-                                is UiState.Error -> Icons.Default.Error
-                                is UiState.Loading -> Icons.Default.HourglassEmpty
-                                else -> Icons.Default.Info
-                            },
-                            contentDescription = null
-                        )
-                        Text(
-                            text = "Service Status",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    
-                    when (val state = healthState) {
-                        is UiState.Loading -> {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        }
-                        is UiState.Success -> {
-                            Text("Status: ${state.data.status}")
-                            Text("Model: ${state.data.modelSize}")
-                            Text("Device: ${state.data.device}")
-                            if (state.data.gpuAvailable && state.data.gpuName != null) {
-                                Text("GPU: ${state.data.gpuName}")
-                            }
-                            Text("Supported Languages: ${state.data.supportedLanguages.joinToString(", ")}")
-                        }
-                        is UiState.Error -> {
-                            val isWifiConnected = isWifiConnected(context)
-                            if (isWifiConnected) {
-                                Text("We could not connect to server")
-                            } else {
-                                Text("Please connect to WiFi to use this service")
-                            }
-                        }
-                        is UiState.Idle -> {
-                            Text("Checking service status...")
-                        }
-                    }
-                }
-            }
-            
             // Transcription Recording Card
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -266,10 +222,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         if (isTranscribing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(120.dp),
-                                strokeWidth = 4.dp
-                            )
+                            AiLoadingAnimation()
                         }
                         
                         PushToTalkButton(
@@ -345,6 +298,69 @@ fun HomeScreen(
             }
             
         }
+    }
+}
+
+@Composable
+fun ServiceStatusPill(
+    healthState: UiState<*>,
+    context: Context
+) {
+    val statusColor = when (healthState) {
+        is UiState.Success -> Color(0xFF4CAF50) // Green
+        is UiState.Loading -> Color(0xFFFF9800) // Orange
+        is UiState.Error -> {
+            if (isWifiConnected(context)) {
+                Color(0xFFF44336) // Red - server error
+            } else {
+                Color(0xFFF44336) // Red - WiFi not connected
+            }
+        }
+        else -> Color(0xFFFF9800) // Orange - connecting/checking
+    }
+    
+    Box(
+        modifier = Modifier
+            .background(
+                color = statusColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = when (healthState) {
+                is UiState.Success -> "Connected"
+                is UiState.Loading -> "Connecting"
+                is UiState.Error -> {
+                    if (isWifiConnected(context)) {
+                        "Not Connected"
+                    } else {
+                        "WiFi Not Connected"
+                    }
+                }
+                else -> "Checking"
+            },
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+fun AiLoadingAnimation() {
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.Asset("ai_logo.json")
+    )
+    
+    Box(
+        modifier = Modifier.size(140.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            iterations = Int.MAX_VALUE,
+            modifier = Modifier.size(140.dp)
+        )
     }
 }
 

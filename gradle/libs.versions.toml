@@ -36,6 +36,9 @@ coil = "2.5.0"
 # Wear OS
 wearCompose = "1.4.0"
 
+# Lottie
+lottie = "6.1.0"
+
 # KSP
 ksp = "2.0.21-1.0.25"
 
@@ -96,6 +99,9 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 wear-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "wearCompose" }
 wear-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "wearCompose" }
 wear-compose-navigation = { group = "androidx.wear.compose", name = "compose-navigation", version.ref = "wearCompose" }
+
+# Lottie
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
