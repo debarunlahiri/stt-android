@@ -32,7 +32,7 @@ class TranscriptionViewModel @Inject constructor(
     private val _audioAmplitude = MutableStateFlow(0)
     val audioAmplitude: StateFlow<Int> = _audioAmplitude.asStateFlow()
     
-    private val _audioQuality = MutableStateFlow<AudioQuality>(AudioQuality.GOOD)
+    private val _audioQuality = MutableStateFlow(AudioQuality.GOOD)
     val audioQuality: StateFlow<AudioQuality> = _audioQuality.asStateFlow()
     
     private val _audioRmsLevel = MutableStateFlow(0.0)

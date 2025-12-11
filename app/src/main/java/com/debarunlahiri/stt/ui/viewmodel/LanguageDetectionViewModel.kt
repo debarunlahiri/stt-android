@@ -29,7 +29,8 @@ class LanguageDetectionViewModel @Inject constructor(
     }
     
     fun detectLanguage() {
-        if (_inputText.value.isBlank()) {
+        val inputText = _inputText.value
+        if (inputText.isBlank()) {
             _detectionState.value = UiState.Error("Please enter text to detect language")
             return
         }
@@ -37,7 +38,7 @@ class LanguageDetectionViewModel @Inject constructor(
         viewModelScope.launch {
             _detectionState.value = UiState.Loading
             
-            when (val result = repository.detectLanguage(_inputText.value)) {
+            when (val result = repository.detectLanguage(inputText)) {
                 is Result.Success -> {
                     _detectionState.value = UiState.Success(result.data)
                 }

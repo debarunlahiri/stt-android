@@ -33,6 +33,40 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity
+            android:name=".ui.screen.HomeActivity"
+            android:exported="false"
+            android:label="STT Service"
+            android:theme="@style/Theme.STT" />
+            
+        <activity
+            android:name=".ui.screen.TranscriptionActivity"
+            android:exported="false"
+            android:label="Voice Transcription"
+            android:theme="@style/Theme.STT"
+            android:parentActivityName=".ui.screen.HomeActivity" />
+            
+        <activity
+            android:name=".ui.screen.TranslationActivity"
+            android:exported="false"
+            android:label="Text Translation"
+            android:theme="@style/Theme.STT"
+            android:parentActivityName=".ui.screen.HomeActivity" />
+            
+        <activity
+            android:name=".ui.screen.LanguageDetectionActivity"
+            android:exported="false"
+            android:label="Language Detection"
+            android:theme="@style/Theme.STT"
+            android:parentActivityName=".ui.screen.HomeActivity" />
+            
+        <activity
+            android:name=".ui.screen.MessengerActivity"
+            android:exported="false"
+            android:label="Send to Messenger"
+            android:theme="@style/Theme.STT"
+            android:parentActivityName=".ui.screen.HomeActivity" />
     </application>
 
 </manifest>

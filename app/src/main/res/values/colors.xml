@@ -1,5 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary colors - Deep violet/purple -->
+    <color name="primary">#7C3AED</color>
+    <color name="primary_dark">#5B21B6</color>
+    <color name="primary_light">#A78BFA</color>
+    <color name="primary_container">#EDE9FE</color>
+    <color name="on_primary_container">#4C1D95</color>
+
+    <!-- Secondary colors - Vibrant cyan -->
+    <color name="secondary">#06B6D4</color>
+    <color name="secondary_dark">#0891B2</color>
+    <color name="secondary_light">#67E8F9</color>
+    <color name="secondary_container">#CFFAFE</color>
+    <color name="on_secondary_container">#164E63</color>
+
+    <!-- Surface colors -->
+    <color name="surface">#FAFAFA</color>
+    <color name="surface_variant">#F4F4F5</color>
+    <color name="on_surface">#18181B</color>
+
+    <!-- Background -->
+    <color name="background">#F8FAFC</color>
+    <color name="on_background">#1E293B</color>
+
+    <!-- Card colors -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_background_gradient_start">#FEFBFF</color>
+    <color name="card_background_gradient_end">#F3E8FF</color>
+
+    <!-- Status colors -->
+    <color name="recording_red">#EF4444</color>
+    <color name="recording_red_dark">#DC2626</color>
+    <color name="success_green">#10B981</color>
+    <color name="warning_orange">#F59E0B</color>
+    <color name="error_red">#EF4444</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#1F2937</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_tertiary">#9CA3AF</color>
+
+    <!-- Accent gradient colors -->
+    <color name="gradient_start">#8B5CF6</color>
+    <color name="gradient_center">#7C3AED</color>
+    <color name="gradient_end">#6D28D9</color>
+
+    <!-- Legacy colors (for compatibility) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

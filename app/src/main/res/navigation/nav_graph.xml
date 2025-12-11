@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeActivity">
+
+    <activity
+        android:id="@+id/homeActivity"
+        android:name="com.debarunlahiri.stt.ui.screen.HomeActivity"
+        android:label="STT Service" />
+
+    <activity
+        android:id="@+id/transcriptionActivity"
+        android:name="com.debarunlahiri.stt.ui.screen.TranscriptionActivity"
+        android:label="Voice Transcription" />
+
+    <activity
+        android:id="@+id/translationActivity"
+        android:name="com.debarunlahiri.stt.ui.screen.TranslationActivity"
+        android:label="Text Translation" />
+
+    <activity
+        android:id="@+id/languageDetectionActivity"
+        android:name="com.debarunlahiri.stt.ui.screen.LanguageDetectionActivity"
+        android:label="Language Detection" />
+
+    <activity
+        android:id="@+id/messengerActivity"
+        android:name="com.debarunlahiri.stt.ui.screen.MessengerActivity"
+        android:label="Send to Messenger">
+        <argument
+            android:name="message"
+            app:argType="string" />
+        <argument
+            android:name="englishText"
+            app:argType="string"
+            android:defaultValue="@null" />
+        <argument
+            android:name="hindiText"
+            app:argType="string"
+            android:defaultValue="@null" />
+        <argument
+            android:name="koreanText"
+            app:argType="string"
+            android:defaultValue="@null" />
+        <argument
+            android:name="audioUrl"
+            app:argType="string"
+            android:defaultValue="@null" />
+    </activity>
+
+</navigation>
+

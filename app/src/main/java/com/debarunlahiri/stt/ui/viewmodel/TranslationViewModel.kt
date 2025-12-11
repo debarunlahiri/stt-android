@@ -44,7 +44,8 @@ class TranslationViewModel @Inject constructor(
     }
     
     fun translateText() {
-        if (_inputText.value.isBlank()) {
+        val inputText = _inputText.value
+        if (inputText.isBlank()) {
             _translationState.value = UiState.Error("Please enter text to translate")
             return
         }
@@ -53,7 +54,7 @@ class TranslationViewModel @Inject constructor(
             _translationState.value = UiState.Loading
             
             when (val result = repository.translateText(
-                text = _inputText.value,
+                text = inputText,
                 sourceLanguage = _sourceLanguage.value,
                 targetLanguage = _targetLanguage.value
             )) {
